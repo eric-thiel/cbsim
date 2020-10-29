@@ -1,6 +1,7 @@
 ### sim logic ###
 options(dplyr.summarise.inform = FALSE)
 
+library(dqrng)
 home_team = subset(players, school_name== "Minnesota")
 away_team = subset(players, school_name =="Iowa")
 home_team = subset(home_team, mins >99)
@@ -16,21 +17,23 @@ colnames(all_holding_events) <- ragrat
 
 
 
-#player_storing_events = data.frame(player = character(0), outcome = character(0))
+player_storing_events = data.frame(player = character(0), outcome = character(0))
 #all_holding_events = data.frame(player = character(0), outcome = character(0), game_number = numeric(0))
 home_team$chance_on_court = home_team$mins / sum(home_team$mins)
 away_team$chance_on_court = away_team$mins / sum(away_team$mins)
 home_holder = home_team
 away_holder = away_team
+
 game_number = 1
 x = 0
  run_sim <- function(nsims){
 repeat{
 
 possessions = 0
-npossessions = round(runif(1, 130,145),0)
+npossessions = round(dqrunif(1, 130,145),0)
 
-repeat{
+while(possessions < npossessions){
+  
   if (dim(player_storing_events)[1] == 0){
       home_team = home_team
       away_team = away_team
@@ -62,7 +65,7 @@ df$twopa_home = df$threepa_home + df$twopa_home
 df$freethrowa_home = df$twopa_home + df$freethrowa_home
 df$turnover_home = df$turnover_home + df$freethrowa_home
 
-rand = runif(1,0,1)
+rand = dqrunif(1,0,1)
 df$which_outcome_home = ifelse(rand < df$threepa_home, "3pa", 
                                ifelse(rand < df$twopa_home, "2pa",
                                       ifelse(rand < df$freethrowa_home, "fta",
@@ -75,10 +78,10 @@ home_outcome = df$which_outcome_home
 if(home_outcome == "3pa"){
   player_outcome = sample_n(home_on_court, 1, replace = FALSE, weight = home_on_court$`3pta_poss`)
   player_outcome = player_outcome %>% dplyr::select(player, `3p%`)
-  rand = runif(1, 0, 1)
+  rand = dqrunif(1, 0, 1)
   player_outcome$outcome = ifelse(player_outcome$`3p%` > rand, "3P", "3P Miss") ##normally 1 is rand
   player_outcome$`3p%`= NULL
-  player_storing_events = rbind(player_storing_events, player_outcome)
+  player_storing_events = bind_rows(player_storing_events, player_outcome)
   ## on 3 point make, is there a foul? if not, start possession of other team
   ## assign block on a miss if needed.
 
@@ -94,10 +97,10 @@ if(home_outcome == "3pa"){
     choose_rebound$choose_rebound = choose_rebound$choose_rebound_1
     choose_rebound$choose_rebound_1 = NULL
     home_oreb_perc = subset(choose_rebound, options == "home_oreb")
-    choice = ifelse(home_oreb_perc$choose_rebound < runif(1,0,1), "away_dreb","home_oreb")
+    choice = ifelse(home_oreb_perc$choose_rebound < dqrunif(1,0,1), "away_dreb","home_oreb")
     
     
-    rand = runif(1,0,1)
+    rand = dqrunif(1,0,1)
     block_3_away = sum(away_on_court$blk_poss)*0.25
     
     if(block_3_away > rand){
@@ -105,7 +108,7 @@ if(home_outcome == "3pa"){
       player_outcome = player_outcome %>% dplyr::select(player)
       player_outcome$outcome = "BLK"
       ##start the "possession" over after storing player outcome 0 and 1.
-      player_storing_events = rbind(player_storing_events, player_outcome)
+      player_storing_events = bind_rows(player_storing_events, player_outcome)
     }
     
     if(choice == "home_oreb"){
@@ -113,7 +116,7 @@ if(home_outcome == "3pa"){
       player_outcome = player_outcome %>% dplyr::select(player)
       player_outcome$outcome = "OREB"
       ##start the "possession" over after storing player outcome 0 and 1.
-      player_storing_events = rbind(player_storing_events, player_outcome)
+      player_storing_events = bind_rows(player_storing_events, player_outcome)
       
     }
     
@@ -121,7 +124,7 @@ if(home_outcome == "3pa"){
       player_outcome = sample_n(away_on_court, 1, replace = FALSE, weight = away_on_court$`dreb_poss`)
       player_outcome = player_outcome %>% dplyr::select(player)
       player_outcome$outcome = "DREB"
-      player_storing_events = rbind(player_storing_events, player_outcome)
+      player_storing_events = bind_rows(player_storing_events, player_outcome)
       ## end the home possession, start away possession
     }
   }
@@ -131,10 +134,10 @@ if(home_outcome == "3pa"){
 if(home_outcome == "2pa"){
   player_outcome = sample_n(home_on_court, 1, replace = FALSE, weight = home_on_court$`2pta_poss`)
   player_outcome = player_outcome %>% dplyr::select(player, `2p%`)
-  rand = runif(1, 0, 1)
+  rand = dqrunif(1, 0, 1)
   player_outcome$outcome = ifelse(player_outcome$`2p%` > rand, "2P", "2P Miss")
   player_outcome$`2p%`= NULL
-  player_storing_events = rbind(player_storing_events, player_outcome)
+  player_storing_events = bind_rows(player_storing_events, player_outcome)
 
   ## on a 2 point miss, who gets the rebound? oreb takes us back to the start, dreb begins other teams possession
   ## assign block on miss if needed.
@@ -154,9 +157,9 @@ if(home_outcome == "2pa"){
     choose_rebound$choose_rebound = choose_rebound$choose_rebound_1
     choose_rebound$choose_rebound_1 = NULL
     home_oreb_perc = subset(choose_rebound, options == "home_oreb")
-    choice = ifelse(home_oreb_perc$choose_rebound < runif(1,0,1), "away_dreb","home_oreb")
+    choice = ifelse(home_oreb_perc$choose_rebound < dqrunif(1,0,1), "away_dreb","home_oreb")
     
-    rand = runif(1,0,1)
+    rand = dqrunif(1,0,1)
     block_2_away = sum(away_on_court$blk_poss)*1.75
     
     if(block_2_away > rand){
@@ -164,7 +167,7 @@ if(home_outcome == "2pa"){
       player_outcome = player_outcome %>% dplyr::select(player)
       player_outcome$outcome = "BLK"
       ##start the "possession" over after storing player outcome 0 and 1.
-      player_storing_events = rbind(player_storing_events, player_outcome)
+      player_storing_events = bind_rows(player_storing_events, player_outcome)
     }
     
     if(choice == "home_oreb"){
@@ -172,7 +175,7 @@ if(home_outcome == "2pa"){
       player_outcome = player_outcome %>% dplyr::select(player)
       player_outcome$outcome = "OREB"
       ##start the "possession" over after storing player outcome 0 and 1.
-      player_storing_events = rbind(player_storing_events, player_outcome)
+      player_storing_events = bind_rows(player_storing_events, player_outcome)
       
     }
     
@@ -180,7 +183,7 @@ if(home_outcome == "2pa"){
       player_outcome = sample_n(away_on_court, 1, replace = FALSE, weight = away_on_court$`dreb_poss`)
       player_outcome = player_outcome %>% dplyr::select(player)
       player_outcome$outcome = "DREB"
-      player_storing_events = rbind(player_storing_events, player_outcome)
+      player_storing_events = bind_rows(player_storing_events, player_outcome)
       ## end the home possession, start away possession
     }
   }
@@ -190,11 +193,11 @@ if(home_outcome == "2pa"){
 if(home_outcome == "fta"){
   player_outcome = sample_n(home_on_court, 1, replace = FALSE, weight = home_on_court$`fta_poss`)
   player_outcome = player_outcome %>% dplyr::select(player, `ft%`)
-  rand = runif(1, 0, 1)
+  rand = dqrunif(1, 0, 1)
   player_outcome$outcome = ifelse(player_outcome$`ft%`*player_outcome$`ft%` < rand, "2FT",
                                   ifelse(player_outcome$`ft%` > rand, "1FT", "FT Miss"))
   player_outcome$`ft%`= NULL
-  player_storing_events = rbind(player_storing_events, player_outcome)
+  player_storing_events = bind_rows(player_storing_events, player_outcome)
   
   
   if(player_outcome$outcome == "FT Miss"){
@@ -209,7 +212,7 @@ if(home_outcome == "fta"){
     choose_rebound$choose_rebound = choose_rebound$choose_rebound_1
     choose_rebound$choose_rebound_1 = NULL
     home_oreb_perc = subset(choose_rebound, options == "home_oreb")
-    choice = ifelse(home_oreb_perc$choose_rebound < runif(1,0,1), "away_dreb","home_oreb")
+    choice = ifelse(home_oreb_perc$choose_rebound < dqrunif(1,0,1), "away_dreb","home_oreb")
     
     
     if(choice == "home_oreb"){
@@ -217,7 +220,7 @@ if(home_outcome == "fta"){
       player_outcome = player_outcome %>% dplyr::select(player)
       player_outcome$outcome = "OREB"
       ##start the "possession" over after storing player outcome 0 and 1.
-      player_storing_events = rbind(player_storing_events, player_outcome)
+      player_storing_events = bind_rows(player_storing_events, player_outcome)
       
     }
     
@@ -225,14 +228,14 @@ if(home_outcome == "fta"){
       player_outcome = sample_n(away_on_court, 1, replace = FALSE, weight = away_on_court$`dreb_poss`)
       player_outcome = player_outcome %>% dplyr::select(player)
       player_outcome$outcome = "DREB"
-      player_storing_events = rbind(player_storing_events, player_outcome)
+      player_storing_events = bind_rows(player_storing_events, player_outcome)
       ## end the home possession, start away possession
     }
   }
   
   
   if(player_outcome$outcome == "1FT"){
-    rand = runif(1,0,1)
+    rand = dqrunif(1,0,1)
     if(rand > 0.45){
       if(player_outcome$outcome == "1FT"){
         home_oreb = sum(home_on_court$oreb_poss)*0.45
@@ -246,14 +249,14 @@ if(home_outcome == "fta"){
         choose_rebound$choose_rebound = choose_rebound$choose_rebound_1
         choose_rebound$choose_rebound_1 = NULL
         home_oreb_perc = subset(choose_rebound, options == "home_oreb")
-        choice = ifelse(home_oreb_perc$choose_rebound < runif(1,0,1), "away_dreb","home_oreb")
+        choice = ifelse(home_oreb_perc$choose_rebound < dqrunif(1,0,1), "away_dreb","home_oreb")
         
         if(choice == "home_oreb"){
           player_outcome = sample_n(home_on_court, 1, replace = FALSE, weight = home_on_court$`oreb_poss`)
           player_outcome = player_outcome %>% dplyr::select(player)
           player_outcome$outcome = "OREB"
           ##start the "possession" over after storing player outcome 0 and 1.
-          player_storing_events = rbind(player_storing_events, player_outcome)
+          player_storing_events = bind_rows(player_storing_events, player_outcome)
           
         }
         
@@ -261,7 +264,7 @@ if(home_outcome == "fta"){
           player_outcome = sample_n(away_on_court, 1, replace = FALSE, weight = away_on_court$`dreb_poss`)
           player_outcome = player_outcome %>% dplyr::select(player)
           player_outcome$outcome = "DREB"
-          player_storing_events = rbind(player_storing_events, player_outcome)
+          player_storing_events = bind_rows(player_storing_events, player_outcome)
           ## end the home possession, start away possession
         }
       }
@@ -278,16 +281,16 @@ if(home_outcome == "to"){
   player_outcome = sample_n(home_on_court, 1, replace = FALSE, weight = home_on_court$`to_poss`)
   player_outcome = player_outcome %>% dplyr::select(player)
   player_outcome$outcome = "TO"
-  player_storing_events = rbind(player_storing_events, player_outcome)
+  player_storing_events = bind_rows(player_storing_events, player_outcome)
   
   
   ## start other team possession, assign steal
-  rand = runif(1,0,1)
+  rand = dqrunif(1,0,1)
   if(rand > 0.5){ ## 50% of turnovers are steals (CHECK THIS)
     player_outcome = sample_n(away_on_court, 1, replace = FALSE, weight = away_on_court$stl_poss)
     player_outcome = player_outcome %>% dplyr::select(player)
     player_outcome$outcome = "STL"
-    player_storing_events = rbind(player_storing_events, player_outcome)
+    player_storing_events = bind_rows(player_storing_events, player_outcome)
   }
   
 }
