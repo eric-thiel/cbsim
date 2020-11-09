@@ -7,6 +7,9 @@ away_team = subset(players, school_name =="Iowa")
 game_players= subset(players, school_name == "Minnesota" | school_name == "Iowa")
 home_team = subset(home_team, mins >99)
 away_team = subset(away_team, mins >99)
+home_team = write.csv(home_team, file = "home_hold.csv")
+away_team = write.csv(away_team, file = "away_hold.csv")
+
 ## get which players are on the court. 
 player_storing_events <- data.frame(matrix(ncol = 2, nrow = 0))
 ragrat <- c("player","outcome")
