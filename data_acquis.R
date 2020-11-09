@@ -82,7 +82,7 @@ teams_possessions = troubling %>% group_by(school_name)%>%
 
 players = troubling %>% group_by(player)%>%
   summarise(mins = sum(MIN), fgm = sum(FGM), fga = sum(FGA), `3ptm` = sum(`3PTM`), `3pta` = sum(`3PTA`), ftm = sum(FTM), fta = sum(FTA),
-            oreb = sum(OREB), dreb = sum(DREB), stl = sum(STL), blk = sum(BLK), to = sum(TO), pf = sum(PF), pts = sum(PTS), school_name = first(school_name))
+            oreb = sum(OREB), dreb = sum(DREB), stl = sum(STL), blk = sum(BLK), to = sum(TO), pf = sum(PF), pts = sum(PTS), ast= sum(AST), school_name = first(school_name))
 players =subset(players, players$player !="TEAM")
 
 
@@ -98,6 +98,7 @@ players$`2pta_poss` = players$`2pta` / players$estimated_poss_on_court
 players$`fta_poss` = players$`fta` / players$estimated_poss_on_court
 players$`oreb_poss` = players$`oreb` / players$estimated_poss_on_court
 players$`dreb_poss` = players$`dreb` / players$estimated_poss_on_court
+players$`ast_poss` = players$`ast` / players$estimated_poss_on_court
 players$`stl_poss` = players$`stl` / players$estimated_poss_on_court
 players$`blk_poss` = players$`blk` / players$estimated_poss_on_court
 players$`to_poss` = players$`to` / players$estimated_poss_on_court
