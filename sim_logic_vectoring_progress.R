@@ -1,14 +1,15 @@
 ### sim logic vectoring progress is the main sim.
-### 2728
-### things to do:
-### add assists to 2pts, 3pts. Is there an assist? who assisted? cannot assist yourself.  DONE
 
-### add and 1 possiblity. hmmmmm. fta / 2ptm ?????????? ray has this at 5%. 5% of the time a made 2pt gives and one? just gonna go with this. 
+### things to do:
+
 ### add 3 point foul possibility. difficult.  ray has 3% chance of a 3 point foul.
-### add fouls (might just be a team thing, difficult to get shooting fouls vs common fouls, then have to add bonus, seems like a headache.)
 ### add possession variability based on data
 ### add defensive stats. % of 2pts, % of 3pts, etc. 3pt%, 2pt%, to%. Use kenpom percentages https://kenpom.com/blog/offense-vs-defense-the-summary/
+
+
+
 ### to add them. 
+library(dplyr)
 
 '%ni%' <- Negate('%in%')
 
@@ -61,7 +62,7 @@ run_sim <- function(nsims){
       `to_home` = `to_home`[,31]
       # `to_home` = `to_home`[,13]
       
-      choose_path_start = c(sum(`3pa_home`), sum(`2pa_home`),sum(`fta_home`),sum(`to_home`))
+      choose_path_start = c(sum(`3pa_home`), sum(`2pa_home`),sum(`fta_home`)*0.5,sum(`to_home`))
       choose_path_start_words = c("3pa", "2pa","fta","to")
       
       home_outcome = replicate(1, sample(choose_path_start_words, 1,prob= choose_path_start, replace = FALSE))
@@ -91,7 +92,7 @@ run_sim <- function(nsims){
           
           home_asts_raw = sum(home_ast[,16]) / sum(home_ast[,3])
           rand = runif(1, 0, 1)
-          shit = ifelse(home_asts_raw < rand, "AST", "UA")
+          shit = ifelse(home_asts_raw > rand, "AST", "UA")
           if(shit == "AST"){
             `home_asts_indiv` =  as.numeric(unlist(`home_asts_indiv`))
             player_outcome = replicate(1, sample(home_possible_asters, 1,prob= home_asts_indiv, replace = FALSE))
@@ -125,7 +126,7 @@ run_sim <- function(nsims){
           
           block_3_away = away_team[away_team$player %in% away_on_court,] ### these DO work lol
           block_3_away = block_3_away[,30]
-          block_3_away_sum = c(sum(block_3_away))*0.25
+          block_3_away_sum = c(sum(block_3_away))*0.7
 
           if(block_3_away_sum > rand){
             `block_3_away` =  as.numeric(unlist(`block_3_away`))
@@ -191,7 +192,7 @@ run_sim <- function(nsims){
           
           home_asts_raw = sum(home_ast[,16]) / sum(home_ast[,3])
           rand = runif(1, 0, 1)
-          shit = ifelse(home_asts_raw < rand, "AST", "UA")
+          shit = ifelse(home_asts_raw > rand, "AST", "UA")
           rand = runif(1,0,1)
           if(shit == "AST"){
             `home_asts_indiv` =  as.numeric(unlist(`home_asts_indiv`))
@@ -205,13 +206,13 @@ run_sim <- function(nsims){
           }
           
           ## add in 1 ft.
-          if(rand < 0.05){
+          if(runif(1,0,1) < 0.05){ ### change this to runif?
             
             `fta_home` =  as.numeric(unlist(`fta_home`))
             player_outcome = replicate(1, sample(home_on_court, 1,prob=`fta_home`, replace = FALSE))
             player_stat = home_team[home_team$player %in% player_outcome,]
             player_stat = `player_stat`[,35]
-            rand = dqrunif(1, 0, 1)
+            rand = runif(1, 0, 1)
             
             
             choose_ft_outcome = c(player_stat,(1-player_stat))
@@ -232,7 +233,7 @@ run_sim <- function(nsims){
               away_dreb = away_team[away_team$player %in% away_on_court,] ### these DO work lol
               away_dreb = away_dreb[,27]
               
-              choose_rebound = c(sum(home_oreb), sum(away_dreb))
+              choose_rebound = c(sum(home_oreb), sum(away_dreb)*1.8)
               
               options = c("home_oreb", "away_dreb")
               
@@ -290,7 +291,7 @@ run_sim <- function(nsims){
           
           block_2_away = away_team[away_team$player %in% away_on_court,] ### these DO work lol
           block_2_away = block_2_away[,30]
-          block_2_away_sum = c(sum(block_2_away))*1.75
+          block_2_away_sum = c(sum(block_2_away))*2.8
           
           
           
@@ -361,7 +362,7 @@ run_sim <- function(nsims){
           away_dreb = away_team[away_team$player %in% away_on_court,] ### these DO work lol
           away_dreb = away_dreb[,27]
           
-          choose_rebound = c(sum(home_oreb), sum(away_dreb))
+          choose_rebound = c(sum(home_oreb), sum(away_dreb)*1.8)
 
           options = c("home_oreb", "away_dreb")
         
@@ -398,7 +399,7 @@ run_sim <- function(nsims){
         
         
         if(outcome == "1FT"){
-          rand = dqrunif(1,0,1)
+          rand = runif(1,0,1)
           if(rand > 0.45){
             if(outcome == "1FT"){
 
@@ -409,7 +410,7 @@ run_sim <- function(nsims){
               away_dreb = away_team[away_team$player %in% away_on_court,] ### these DO work lol
               away_dreb = away_dreb[,27]
               
-              choose_rebound = c(sum(home_oreb), sum(away_dreb))
+              choose_rebound = c(sum(home_oreb), sum(away_dreb)*1.8)
 
               options = c("home_oreb", "away_dreb")
         

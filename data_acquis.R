@@ -5,8 +5,8 @@ library(devtools)
 
 ids = ncaahoopR::ids
 
-game_ids = get_game_ids("Iowa","2019-20")
-roster_iowa = get_roster("Iowa", "2019-20")
+game_ids = get_game_ids("Duke","2019-20")
+roster_iowa = get_roster("Duke", "2019-20")
 
 ids_new = as.data.frame(game_ids)
 pull = ids_new[1,]
@@ -42,8 +42,8 @@ for(i in ids_new$game_ids){
 }
 
 
-game_ids = get_game_ids("Minnesota","2019-20")
-roster_minny = get_roster("Minnesota", "2019-20")
+game_ids = get_game_ids("Kentucky","2019-20")
+roster_minny = get_roster("Kentucky", "2019-20")
 
 ids_new = as.data.frame(game_ids)
 
@@ -109,6 +109,15 @@ players$`2p%` = players$`2ptm` / players$`2pta`
 players$`ft%` = players$`ftm` / players$`fta`
 
 
+### adjusted tempo, big matrix like usports, solve for possessions.
+
+## adjusted defence, big matrix like usports, solve for fta/poss, 2pa / poss, 3pa / poss. 3pt% allowed, 2p% allowed
+
+## adjusted offence for percentages (3p%, 2p%) - trash team vs minnesota etc
+
+
+
+
 
 
 ## adjust player minutes to get estimated possessions on the floor.
@@ -117,11 +126,6 @@ players$`ft%` = players$`ftm` / players$`fta`
 
 ## and ones?
 ## average was like 3% in nba in 2005 lol that is 3% of fgm also had an and one opp.
-## back of napkin math to adjust for players shooting more 2s than 3s, more likely to get fouled for an and one. 
-
-
-
-
 
 
 #just use percentage of minutes for now
